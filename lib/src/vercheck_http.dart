@@ -5,8 +5,12 @@ import 'dart:convert' show JSON;
 
 import 'package:http/http.dart' as http;
 
+import 'vercheck_package.dart';
+
+typedef Future<http.Response> Get(uri, {Map<String, String> headers});
+
 final Uri defaultPubUrl =
-  createPubUri("pub.dartlang.org", prefix: "api", secure: false);
+  createPubUri("pub.dartlang.org", prefix: "api", secure: true);
 
 const Map<String, String> defaultHeaders =
   const {"accept": "application/json"};
@@ -25,13 +29,26 @@ Uri join(String path, Uri source) {
 }
 
 Future<Map<String, dynamic>> getPackageJson(String packageName,
-    {Uri pubUrl, Map<String, String> headers: defaultHeaders}) {
+    {Uri pubUrl, Map<String, String> headers: defaultHeaders,
+     Get getter}) {
   if (null == pubUrl) pubUrl = defaultPubUrl;
+  if (null == getter) getter = http.get;
   
   var targetUri = join(packageName, join("packages", pubUrl));
-  return http.get(targetUri, headers: headers).then((resp) {
+  return getter(targetUri, headers: headers).then((resp) {
     StatusException.check(200, resp);
     return JSON.decode(resp.body);
+  });
+}
+
+Future<Package> getLatestPackage(String packageName,
+    {Uri pubUrl, Map<String, dynamic> headers: defaultHeaders,
+     Get getter}) {
+  return getPackageJson(packageName,
+                        pubUrl: pubUrl,
+                        headers: headers,
+                        getter: getter).then((json) {
+    return new Package.fromJson(json);
   });
 }
 

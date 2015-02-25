@@ -1,0 +1,105 @@
+{
+    "uploaders": [
+        "adracus@gmail.com"
+    ],
+    "name": "rsa",
+    "versions": [
+        {
+            "pubspec": {
+                "version": "0.0.1",
+                "description": "A library providing a simple to use RSA interface",
+                "dependencies": {
+                    "rsa_pkcs": ">=0.1.1 <0.2.0",
+                    "bignum": ">=0.0.6 <0.1.0",
+                    "crypto": ">=0.9.0 <0.10.0",
+                    "asn1lib": ">=0.3.3 <0.4.0"
+                },
+                "author": "Axel Christ <adracus@gmail.com>",
+                "dev_dependencies": {
+                    "unittest": ">=0.11.4 <0.12.0"
+                },
+                "homepage": "https://github.com/Adracus/rsa",
+                "name": "rsa"
+            },
+            "url": "https://pub.dartlang.org/api/packages/rsa/versions/0.0.1",
+            "archive_url": "https://pub.dartlang.org/packages/rsa/versions/0.0.1.tar.gz",
+            "version": "0.0.1",
+            "new_dartdoc_url": "https://pub.dartlang.org/api/packages/rsa/versions/0.0.1/new_dartdoc",
+            "package_url": "https://pub.dartlang.org/api/packages/rsa"
+        },
+        {
+            "pubspec": {
+                "version": "0.0.2",
+                "description": "A library providing a simple to use RSA interface",
+                "dependencies": {
+                    "rsa_pkcs": {
+                        "git": {
+                            "url": "git://github.com/Adracus/rsa_pkcs.git",
+                            "ref": "0d79fea965767a0ab6d78cf75d9101ffe49e66d7"
+                        }
+                    },
+                    "bignum": ">=0.0.6 <0.1.0",
+                    "bbs": ">=0.0.1 < 0.1.0",
+                    "crypto": ">=0.9.0 <0.10.0",
+                    "asn1lib": {
+                        "git": {
+                            "url": "git://github.com/Adracus/asn1lib.git",
+                            "ref": "795eeee72b180ff106c8f6f9d48b458b049fc11f"
+                        }
+                    }
+                },
+                "author": "Axel Christ <adracus@gmail.com>",
+                "dev_dependencies": {
+                    "unittest": ">=0.11.4 <0.12.0"
+                },
+                "homepage": "https://github.com/Adracus/rsa",
+                "name": "rsa"
+            },
+            "url": "https://pub.dartlang.org/api/packages/rsa/versions/0.0.2",
+            "archive_url": "https://pub.dartlang.org/packages/rsa/versions/0.0.2.tar.gz",
+            "version": "0.0.2",
+            "new_dartdoc_url": "https://pub.dartlang.org/api/packages/rsa/versions/0.0.2/new_dartdoc",
+            "package_url": "https://pub.dartlang.org/api/packages/rsa"
+        }
+    ],
+    "url": "https://pub.dartlang.org/api/packages/rsa",
+    "uploaders_url": "https://pub.dartlang.org/api/packages/rsa/uploaders",
+    "created": "2015-01-27T19:40:58.944550",
+    "new_version_url": "https://pub.dartlang.org/api/packages/rsa/versions/new",
+    "version_url": "https://pub.dartlang.org/api/packages/rsa/versions/{version}",
+    "downloads": 0,
+    "latest": {
+        "pubspec": {
+            "version": "0.0.2",
+            "description": "A library providing a simple to use RSA interface",
+            "dependencies": {
+                "rsa_pkcs": {
+                    "git": {
+                        "url": "git://github.com/Adracus/rsa_pkcs.git",
+                        "ref": "0d79fea965767a0ab6d78cf75d9101ffe49e66d7"
+                    }
+                },
+                "bignum": ">=0.0.6 <0.1.0",
+                "bbs": ">=0.0.1 < 0.1.0",
+                "crypto": ">=0.9.0 <0.10.0",
+                "asn1lib": {
+                    "git": {
+                        "url": "git://github.com/Adracus/asn1lib.git",
+                        "ref": "795eeee72b180ff106c8f6f9d48b458b049fc11f"
+                    }
+                }
+            },
+            "author": "Axel Christ <adracus@gmail.com>",
+            "dev_dependencies": {
+                "unittest": ">=0.11.4 <0.12.0"
+            },
+            "homepage": "https://github.com/Adracus/rsa",
+            "name": "rsa"
+        },
+        "url": "https://pub.dartlang.org/api/packages/rsa/versions/0.0.2",
+        "archive_url": "https://pub.dartlang.org/packages/rsa/versions/0.0.2.tar.gz",
+        "version": "0.0.2",
+        "new_dartdoc_url": "https://pub.dartlang.org/api/packages/rsa/versions/0.0.2/new_dartdoc",
+        "package_url": "https://pub.dartlang.org/api/packages/rsa"
+    }
+}
