@@ -8,8 +8,8 @@ class Package {
   final String name;
   final Version version;
   final String description;
-  final List<Dependency> dependencies;
-  final List<Dependency> devDependencies;
+  final Set<Dependency> dependencies;
+  final Set<Dependency> devDependencies;
   
   Package(this.name, this.version, this.description,
       this.dependencies, this.devDependencies);
@@ -26,10 +26,10 @@ class Package {
     return null;
   }
   
-  static List<Dependency> dependenciesFromJson(Map<String, dynamic> json,
+  static Set<Dependency> dependenciesFromJson(Map<String, dynamic> json,
       {bool dev: false}) {
     var matcher = dev ? "dev_dependencies" : "dependencies";
-    if (!json.containsKey(matcher)) return [];
+    if (!json.containsKey(matcher)) return new Set();
     return Dependency.dependenciesFromJson(json[matcher]);
   }
 }

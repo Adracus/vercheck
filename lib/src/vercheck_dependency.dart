@@ -1,5 +1,6 @@
 library vercheck.dependency;
 
+import 'package:quiver/core.dart';
 import 'package:pub_semver/pub_semver.dart' show VersionConstraint;
 
 import 'vercheck_http.dart';
@@ -11,8 +12,8 @@ class Dependency {
   
   Dependency(this.name, this.source, this.version);
   
-  static List<Dependency> dependenciesFromJson(Map<String, dynamic> dependencies) {
-    var result = [];
+  static Set<Dependency> dependenciesFromJson(Map<String, dynamic> dependencies) {
+    var result = new Set();
     dependencies.forEach((name, json) {
       var version = versionFromJson(json);
       var source = new DependencySource.fromJson(name, json);
@@ -31,6 +32,15 @@ class Dependency {
     }
     return null;
   }
+  
+  operator==(other) {
+    if (other is! Dependency) return false;
+    return this.name == other.name &&
+           this.version == other.version &&
+           this.source == other.source;
+  }
+  
+  int get hashCode => hash3(name, version, source);
 }
 
 abstract class DependencySource {
@@ -73,12 +83,26 @@ class GitSource implements DependencySource {
     }
     throw new ArgumentError.value(json);
   }
+  
+  operator==(other) {
+    if (other is! GitSource) return false;
+    return this.ref == other.ref && this.url == other.url;
+  }
+  
+  int get hashCode => hash2(ref, url);
 }
 
 class PathSource implements DependencySource {
   final String path;
   
   PathSource(this.path);
+  
+  operator==(other) {
+    if (other is! PathSource) return false;
+    return this.path == other.path;
+  }
+  
+  int get hashCode => path.hashCode;
 }
 
 class HostedSource implements DependencySource {
@@ -87,4 +111,11 @@ class HostedSource implements DependencySource {
   
   HostedSource(this.name, [Uri url])
       : url = null == url ? defaultPubUrl : url;
+  
+  operator==(other) {
+    if (other is! HostedSource) return false;
+    return this.url == other.url && this.name == other.name;
+  }
+  
+  int get hashCode => hash2(url, name);
 }
