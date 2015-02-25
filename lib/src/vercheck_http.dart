@@ -48,7 +48,7 @@ Future<Package> getLatestPackage(String packageName,
                         pubUrl: pubUrl,
                         headers: headers,
                         getter: getter).then((json) {
-    return new Package.fromJson(json);
+    return new Package.fromJson(json["latest"]["pubspec"]);
   });
 }
 

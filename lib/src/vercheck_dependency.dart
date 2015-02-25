@@ -10,7 +10,7 @@ class Dependency {
   final VersionConstraint version;
   final DependencySource source;
   
-  Dependency(this.name, this.source, this.version);
+  Dependency(this.name, this.source, [this.version]);
   
   static Set<Dependency> dependenciesFromJson(Map<String, dynamic> dependencies) {
     var result = new Set();

@@ -55,7 +55,7 @@ defineHttpTests() {
         return new Future.value(new Response(body, 200));
       };
       getLatestPackage("rsa", getter: getter).then(expectAsync((Package package) {
-        var compare = new Package.fromJson(JSON.decode(body));
+        var compare = new Package.fromJson(JSON.decode(body)["latest"]["pubspec"]);
         
         expect(package.equals(compare), isTrue);
       }));

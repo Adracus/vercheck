@@ -56,24 +56,28 @@ class Comparison {
   
   Comparison._(this.state, this.dependency, [this.package]);
   
-  static Future<Comparison> analyze(Dependency dependency) {
+  static Future<Comparison> analyze(Dependency dependency, {Get getter}) {
     if (dependency.source is! HostedSource)
       return toFuture(new Comparison._(nonHostedState, dependency));
-    if (dependency.version.isAny)
-      return toFuture(new Comparison._(anyState, dependency));
-    if (dependency.version.isEmpty)
-      return toFuture(new Comparison._(badState, dependency));
-    return getLatestPackage(dependency.name).then((package) {
+    return getLatestPackage(dependency.name, getter: getter).then((package) {
+      if (dependency.version.isEmpty)
+        return toFuture(new Comparison._(badState, dependency, package));
+      if (dependency.version.isAny)
+        return new Comparison._(anyState, dependency, package);
       var state = compareVersions(dependency.version, package.version);
       return new Comparison._(state, dependency, package);
     });
   }
   
-  static int compareVersions(VersionRange range, Version version) {
-    if (range.allows(version)) return goodState;
-    var compare = range.max.compareTo(version);
-    if (0 == compare) return goodState;
-    if (1 == compare) return errorState;
+  static int compareVersions(VersionConstraint constraint, Version version) {
+    if (constraint.isAny) return anyState;
+    if (constraint.allows(version)) return goodState;
+    if (constraint is VersionRange || constraint is Version) {
+      var max = constraint is VersionRange ?
+          constraint.max : constraint;
+      var compare = max.compareTo(version);
+      if (1 == compare) return errorState;
+    }
     return badState;
   }
   
@@ -84,4 +88,11 @@ class Comparison {
   bool get isAny => state == anyState;
   bool get isGood => state == goodState;
   bool get isError => state == errorState;
+  
+  bool equals(other) {
+    if (other is! Comparison) return false;
+    return this.state == other.state &&
+           this.package.equals(other.package) &&
+           this.dependency == other.dependency;
+  }
 }
