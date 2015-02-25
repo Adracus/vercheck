@@ -5,6 +5,11 @@ import 'package:pub_semver/pub_semver.dart';
 import 'vercheck_dependency.dart';
 
 class Package {
+  static const int GOOD_STATE = 0;
+  static const int CAUTION_STATE = 1;
+  static const int BAD_STATE = 2;
+  static const int ERROR_STATE = 4;
+  
   final String name;
   final Version version;
   final String description;
@@ -31,5 +36,16 @@ class Package {
     var matcher = dev ? "dev_dependencies" : "dependencies";
     if (!json.containsKey(matcher)) return new Set();
     return Dependency.dependenciesFromJson(json[matcher]);
+  }
+  
+  bool equals(other) => equalPackages(this, other);
+  
+  static bool equalPackages(self, other) {
+    if (other is! Package) return false;
+    return self.name == other.name &&
+           self.version == other.version &&
+           self.description == other.description &&
+           self.dependencies.difference(other.dependencies).isEmpty &&
+           self.devDependencies.difference(other.devDependencies).isEmpty;
   }
 }

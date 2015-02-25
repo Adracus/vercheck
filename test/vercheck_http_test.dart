@@ -32,8 +32,8 @@ defineHttpTests() {
           equals("http://pub.dartlang.org/api/mypackage"));
     });
     
+    var body = new File("res/pub_response.json").readAsStringSync();
     test("getPackageJson", () {
-      var body = new File("res/pub_response.json").readAsStringSync();
       var getter = (url, {Map<String, String> headers}) {
         expect(url, new isInstanceOf<Uri>("Uri"));
         expect(url.toString(), equals("https://pub.dartlang.org/api/packages/rsa"));
@@ -47,6 +47,18 @@ defineHttpTests() {
     });
     
     test("getLatestPackage", () {
+      var getter = (url, {Map<String, String> headers}) {
+        expect(url, new isInstanceOf<Uri>("Uri"));
+        expect(url.toString(), equals("https://pub.dartlang.org/api/packages/rsa"));
+        expect(headers, equals({"accept": "application/json"}));
+        
+        return new Future.value(new Response(body, 200));
+      };
+      getLatestPackage("rsa", getter: getter).then(expectAsync((Package package) {
+        var compare = new Package.fromJson(JSON.decode(body));
+        
+        expect(package.equals(compare), isTrue);
+      }));
     });
   });
 }
