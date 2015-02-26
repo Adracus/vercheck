@@ -3,13 +3,16 @@
 
 import 'dart:io';
 
+import 'package:vercheck/vercheck.dart';
 import 'package:args/args.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 
 void main(List<String> args) {
   var parser = new ArgParser()
-      ..addOption('port', abbr: 'p', defaultsTo: '8080');
+      ..addOption('port', abbr: 'p',
+          defaultsTo: const String.fromEnvironment("port",
+              defaultValue: "8080"));
 
   var result = parser.parse(args);
 

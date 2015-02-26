@@ -17,10 +17,19 @@ class Analysis {
   static const List<int> states =
       const[goodState, warningState, badState, errorState];
   
+  static const Map<int, String> stateNames = const {
+    goodState:    "good",
+    warningState: "warning",
+    badState:     "bad",
+    errorState:   "error"
+  };
+  
   final int state;
+  final Package package;
   final List<Comparison> comparisons;
   
-  Analysis._(int state, this.comparisons) : state = checkState(state);
+  Analysis._(int state, this.package, this.comparisons)
+      : state = checkState(state);
   
   static int checkState(int state) {
     if (!states.any((s) => s == state))
@@ -28,8 +37,14 @@ class Analysis {
     return state;
   }
   
-  static Future<Analysis> analyze(Set<Dependency> dependencies) {
-    return Future.wait(dependencies.map(Comparison.analyze))
+  String get stateName => stateNames[this.state];
+  
+  static Future<Analysis> analyzeLatest(String packageName) {
+    return getLatestPackage(packageName).then(analyzePackage);
+  }
+  
+  static Future<Analysis> analyzePackage(Package package) {
+    return Future.wait(package.dependencies.map(Comparison.analyze))
                  .then((List<Comparison> comparisons) {
       int state = comparisons.fold(0, (acc, comparison) {
         if (comparison.isGood) return acc;
@@ -38,7 +53,7 @@ class Analysis {
         if (comparison.isBad) return max(acc, badState);
         if (comparison.isError) return errorState;
       });
-      return new Analysis._(state, comparisons);
+      return new Analysis._(state, package, comparisons);
     });
   }
 }
