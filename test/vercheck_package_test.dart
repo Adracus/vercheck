@@ -1,5 +1,8 @@
 library vercheck.test.package;
 
+import 'dart:io' show File;
+import 'dart:convert' show JSON;
+
 import 'package:pub_semver/pub_semver.dart';
 import 'package:unittest/unittest.dart';
 
@@ -36,6 +39,54 @@ definePackageTests() {
       expect(p1.equals(p3), isTrue);
       expect(p1.equals(p4), isFalse);
       expect(p1.equals(p5), isFalse);
+    });
+    
+    test("fromJson", () {
+      var body = new File("res/pub_response.json").readAsStringSync();
+      var json = JSON.decode(body)["latest"]["pubspec"];
+      
+      var package = new Package.fromJson(json);
+      expect(package.name, equals("rsa"));
+      expect(package.description,
+          equals("A library providing a simple to use RSA interface"));
+      expect(package.version, equals(new Version(0, 0, 2)));
+      expect(package.dependencies.length, equals(5));
+      
+      var dependencies = package.dependencies.toList();
+      expect(dependencies[0],
+          equals(new Dependency("rsa_pkcs",
+              new GitSource(Uri.parse("git://github.com/Adracus/rsa_pkcs.git"),
+                            "0d79fea965767a0ab6d78cf75d9101ffe49e66d7"))));
+      expect(dependencies[1],
+          equals(new Dependency("bignum", new HostedSource("bignum"),
+              new VersionRange(
+                  min: new Version(0, 0, 6),
+                  max: new Version(0, 1, 0),
+                  includeMin: true))));
+      expect(dependencies[2],
+          equals(new Dependency("bbs", new HostedSource("bbs"),
+              new VersionRange(
+                  min: new Version(0, 0, 1),
+                  max: new Version(0, 1, 0),
+                  includeMin: true))));
+      expect(dependencies[3],
+          equals(new Dependency("crypto", new HostedSource("crypto"),
+              new VersionRange(
+                  min: new Version(0, 9, 0),
+                  max: new Version(0, 10, 0),
+                  includeMin: true))));
+      expect(dependencies[4],
+          equals(new Dependency("asn1lib",
+              new GitSource(Uri.parse("git://github.com/Adracus/asn1lib.git"),
+                            "795eeee72b180ff106c8f6f9d48b458b049fc11f"))));
+      
+      expect(package.devDependencies.length, equals(1));
+      expect(package.devDependencies.single,
+          equals(new Dependency("unittest", new HostedSource("unittest"),
+              new VersionRange(
+                  min: new Version(0, 11, 4),
+                  max: new Version(0, 12, 0),
+                  includeMin: true))));
     });
   });
 }

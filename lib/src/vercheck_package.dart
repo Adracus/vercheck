@@ -5,11 +5,6 @@ import 'package:pub_semver/pub_semver.dart';
 import 'vercheck_dependency.dart';
 
 class Package {
-  static const int GOOD_STATE = 0;
-  static const int CAUTION_STATE = 1;
-  static const int BAD_STATE = 2;
-  static const int ERROR_STATE = 4;
-  
   final String name;
   final Version version;
   final String description;
