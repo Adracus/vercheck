@@ -33,6 +33,11 @@ class Analysis {
   Analysis._(int state, this.package, this.comparisons)
       : state = checkState(state);
   
+  bool get isGood => goodState == state;
+  bool get isWarning => warningState == state;
+  bool get isBad => badState == state;
+  bool get isError => errorState == state;
+  
   static int checkState(int state) {
     if (!states.any((s) => s == state))
       throw new ArgumentError("Invalid State $state");
