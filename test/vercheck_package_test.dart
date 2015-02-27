@@ -11,7 +11,7 @@ import 'package:vercheck/vercheck.dart';
 
 definePackageTests() {
   group("Package", () {
-    test("equals", () {
+    test("==", () {
       var d1 = new Dependency("mydep",
           new HostedSource("mydep", new Version(0, 0, 1)));
       var d2 = new Dependency("mydep",
@@ -34,11 +34,11 @@ definePackageTests() {
       var p5 = new Package("other", new Version(0, 1, 0), "A package",
           new Set.from([]), new Set.from([d1]));
       
-      expect(p1.equals(p1), isTrue);
-      expect(p1.equals(p2), isFalse);
-      expect(p1.equals(p3), isTrue);
-      expect(p1.equals(p4), isFalse);
-      expect(p1.equals(p5), isFalse);
+      expect(p1, equals(p1));
+      expect(p1, isNot(equals(p2)));
+      expect(p1, equals(p3));
+      expect(p1, isNot(equals(p4)));
+      expect(p1, isNot(equals(p5)));
     });
     
     test("fromJson", () {

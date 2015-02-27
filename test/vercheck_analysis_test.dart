@@ -44,9 +44,8 @@ defineAnalysisTests() {
               new HostedSource("rsa", VersionConstraint.any));
           
           Comparison.analyze(dep, getter: rsaGetter).then(expectAsync((comparison) {
-            expect(comparison.package.equals(
-                new Package.fromJson(JSON.decode(rsaResponse)["latest"]["pubspec"])),
-                isTrue);
+            expect(comparison.package, equals(
+                new Package.fromJson(JSON.decode(rsaResponse)["latest"]["pubspec"])));
             expect(comparison.isAny, isTrue);
           }));
         });
@@ -56,9 +55,8 @@ defineAnalysisTests() {
             var dep = new Dependency("rsa", new HostedSource("rsa", version));
             
             Comparison.analyze(dep, getter: rsaGetter).then(expectAsync((comparison) {
-              expect(comparison.package.equals(
-                  new Package.fromJson(JSON.decode(rsaResponse)["latest"]["pubspec"])),
-                  isTrue);
+              expect(comparison.package, equals(
+                  new Package.fromJson(JSON.decode(rsaResponse)["latest"]["pubspec"])));
               expect(comparison.state, equals(expectedState));
             }));
           }

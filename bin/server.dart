@@ -39,7 +39,7 @@ void main(List<String> args) {
 Future<shelf.Response> _analyzePackage(shelf.Request request) {
   var packageName = getPathParameter(request, "name");
   return Analysis.analyzeLatest(packageName).then((analysis) {
-    var js = JSON.encode(analysis);
-    return new shelf.Response(200, body: analysis.stateName);
+    var js = JSON.encode(analysis.toJsonRepresentation());
+    return new shelf.Response(200, headers: {"content-type": "json"}, body: js);
   });
 }

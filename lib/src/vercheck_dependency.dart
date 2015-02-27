@@ -28,9 +28,9 @@ class Dependency {
   
   int get hashCode => hash2(name, source);
   
-  toJsonRepresentation() {
-    return source.toJsonRepresentation();
-  }
+  Map<String, dynamic> toJsonRepresentation() => {
+    name: source.toJsonRepresentation()
+  };
 }
 
 abstract class DependencySource {
@@ -146,7 +146,15 @@ class HostedSource implements DependencySource {
   }
   
   toJsonRepresentation() {
-    if (defaultPubUrl == url) return name;
+    if (defaultPubUrl == url) return version.toString();
+    var result = {
+      "hosted": {
+        "name": name,
+        "url": url
+      }
+    };
+    if (null == version) return result;
+    return result..["version"] = version.toString();
   }
   
   int get hashCode => hash2(url, name);

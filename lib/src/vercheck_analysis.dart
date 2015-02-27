@@ -5,6 +5,7 @@ import 'dart:math' show max;
 
 import 'package:pub_semver/pub_semver.dart';
 
+import 'vercheck_hash.dart';
 import 'vercheck_dependency.dart';
 import 'vercheck_package.dart';
 import 'vercheck_http.dart';
@@ -26,7 +27,8 @@ class Analysis {
   
   final int state;
   final Package package;
-  final List<Comparison> comparisons;
+  final Set<Comparison> comparisons;
+  int _hashCode;
   
   Analysis._(int state, this.package, this.comparisons)
       : state = checkState(state);
@@ -38,6 +40,32 @@ class Analysis {
   }
   
   String get stateName => stateNames[this.state];
+  
+  Map<String, dynamic> toJsonRepresentation() => {
+    "state": state,
+    "state_name": stateName,
+    "package": package.toJsonRepresentation(),
+    "comparisons": comparisonsJsonRepresentation()
+  };
+  
+  Map<String, dynamic> comparisonsJsonRepresentation() {
+    return comparisons.fold({}, (result, comparison) {
+      result[comparison.dependency.name] = comparison.toJsonRepresentation();
+      return result;
+    });
+  }
+  
+  int get hashCode {
+    if (null == _hashCode) {
+      var sortedComparisons = comparisons
+         .toList()
+         ..sort((c1, c2) =>
+             c1.dependency.name.compareTo(c2.dependency.name));
+      var comparisonHash = hashObjects(sortedComparisons);
+      _hashCode = hash3(state, package, comparisonHash);
+    }
+    return _hashCode;
+  }
   
   static Future<Analysis> analyzeLatest(String packageName) {
     return getLatestPackage(packageName).then(analyzePackage);
@@ -53,7 +81,7 @@ class Analysis {
         if (comparison.isBad) return max(acc, badState);
         if (comparison.isError) return errorState;
       });
-      return new Analysis._(state, package, comparisons);
+      return new Analysis._(state, package, comparisons.toSet());
     });
   }
 }
@@ -65,11 +93,28 @@ class Comparison {
   static const int badState = 3;
   static const int errorState = 4;
   
+  static const Map<int, String> stateNames = const{
+    goodState: "good",
+    nonHostedState: "non-hosted",
+    anyState: "any",
+    badState: "bad",
+    errorState: "error"
+  };
+  
   final Dependency dependency;
   final Package package;
   final int state;
   
   Comparison._(this.state, this.dependency, [this.package]);
+  
+  String get stateName => stateNames[state];
+  
+  toJsonRepresentation() => {
+    "dependency": dependency.toJsonRepresentation(),
+    "package": package.toJsonRepresentation(),
+    "state": state,
+    "state_name": stateName
+  };
   
   static Future<Comparison> analyze(Dependency dependency, {Get getter}) {
     if (dependency.source is! HostedSource)
@@ -105,10 +150,12 @@ class Comparison {
   bool get isGood => state == goodState;
   bool get isError => state == errorState;
   
-  bool equals(other) {
+  bool operator==(other) {
     if (other is! Comparison) return false;
     return this.state == other.state &&
-           this.package.equals(other.package) &&
+           this.package == other.package &&
            this.dependency == other.dependency;
   }
+  
+  int get hashCode => hash3(dependency, package, state);
 }

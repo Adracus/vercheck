@@ -57,7 +57,7 @@ defineHttpTests() {
       getLatestPackage("rsa", getter: getter).then(expectAsync((Package package) {
         var compare = new Package.fromJson(JSON.decode(body)["latest"]["pubspec"]);
         
-        expect(package.equals(compare), isTrue);
+        expect(package == compare, isTrue);
       }));
     });
   });
