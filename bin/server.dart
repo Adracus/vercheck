@@ -2,11 +2,14 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:async' show Future;
+import 'dart:convert' show JSON;
 
 import 'package:vercheck/vercheck.dart';
 import 'package:args/args.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
+import 'package:shelf_route/shelf_route.dart';
 
 void main(List<String> args) {
   var parser = new ArgParser()
@@ -20,16 +23,23 @@ void main(List<String> args) {
     stdout.writeln('Could not parse port value "$val" into a number.');
     exit(1);
   });
+  
+  var myRouter = router()
+      ..get("/packages/{name}", _analyzePackage);
 
   var handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
-      .addHandler(_echoRequest);
+      .addHandler(myRouter.handler);
 
   io.serve(handler, 'localhost', port).then((server) {
     print('Serving at http://${server.address.host}:${server.port}');
   });
 }
 
-shelf.Response _echoRequest(shelf.Request request) {
-  return new shelf.Response.ok('Request for "${request.url}"');
+Future<shelf.Response> _analyzePackage(shelf.Request request) {
+  var packageName = getPathParameter(request, "name");
+  return Analysis.analyzeLatest(packageName).then((analysis) {
+    var js = JSON.encode(analysis);
+    return new shelf.Response(200, body: analysis.stateName);
+  });
 }

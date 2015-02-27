@@ -41,7 +41,7 @@ defineAnalysisTests() {
                                         .readAsStringSync();
           
           var dep = new Dependency("rsa",
-              new HostedSource("rsa"), VersionConstraint.any);
+              new HostedSource("rsa", VersionConstraint.any));
           
           Comparison.analyze(dep, getter: rsaGetter).then(expectAsync((comparison) {
             expect(comparison.package.equals(
@@ -53,7 +53,7 @@ defineAnalysisTests() {
         
         test("hosted sources", () {
           void _compare(VersionConstraint version, int expectedState) {
-            var dep = new Dependency("rsa", new HostedSource("rsa"), version);
+            var dep = new Dependency("rsa", new HostedSource("rsa", version));
             
             Comparison.analyze(dep, getter: rsaGetter).then(expectAsync((comparison) {
               expect(comparison.package.equals(

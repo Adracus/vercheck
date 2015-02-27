@@ -1,52 +1,48 @@
 library vercheck.dependency;
 
-import 'package:quiver/core.dart';
 import 'package:pub_semver/pub_semver.dart' show VersionConstraint;
 
 import 'vercheck_http.dart';
+import 'vercheck_hash.dart';
 
 class Dependency {
   final String name;
-  final VersionConstraint version;
   final DependencySource source;
   
-  Dependency(this.name, this.source, [this.version]);
+  Dependency(this.name, this.source);
   
   static Set<Dependency> dependenciesFromJson(Map<String, dynamic> dependencies) {
     var result = new Set();
     dependencies.forEach((name, json) {
-      var version = versionFromJson(json);
       var source = new DependencySource.fromJson(name, json);
-      result.add(new Dependency(name, source, version));
+      result.add(new Dependency(name, source));
     });
     return result;
-  }
-  
-  static VersionConstraint versionFromJson(json) {
-    if (json is String) {
-      return new VersionConstraint.parse(json);
-    }
-    if (json is Map<String, dynamic>) {
-      if (json.containsKey("version"))
-        return new VersionConstraint.parse(json["version"]);
-    }
-    return null;
   }
   
   operator==(other) {
     if (other is! Dependency) return false;
     return this.name == other.name &&
-           this.version == other.version &&
            this.source == other.source;
   }
   
-  int get hashCode => hash3(name, version, source);
+  int get hashCode => hash2(name, source);
+  
+  toJsonRepresentation() {
+    return source.toJsonRepresentation();
+  }
 }
 
 abstract class DependencySource {
+  static const Map<String, String> typeNames = const {
+    GitSource: "git",
+    PathSource: "path",
+    HostedSource: "hosted"
+  };
+  
   factory DependencySource.fromJson(String name, dynamic json) {
     if (json is String)
-      return new HostedSource(name);
+      return new HostedSource.fromJson(name, json);
     if (json is! Map<String, dynamic>)
       throw new ArgumentError.value(json);
     
@@ -56,8 +52,14 @@ abstract class DependencySource {
     if (json.containsKey("path"))
       return new PathSource(json["path"]);
     
+    if (json.containsKey("hosted")) {
+      return new HostedSource.fromJson(name, json["hosted"], json["version"]);
+    }
+    
     throw new DependencySourceParseException(json);
   }
+  
+  toJsonRepresentation();
 }
 
 class DependencySourceParseException implements Exception {
@@ -89,6 +91,14 @@ class GitSource implements DependencySource {
     return this.ref == other.ref && this.url == other.url;
   }
   
+  toJsonRepresentation() {
+    if (null == ref) return {"git": url};
+    return {"git": {
+      "url": url,
+      "ref": ref
+    }};
+  }
+  
   int get hashCode => hash2(ref, url);
 }
 
@@ -102,19 +112,41 @@ class PathSource implements DependencySource {
     return this.path == other.path;
   }
   
+  toJsonRepresentation() {
+    return {"path": path};
+  }
+  
   int get hashCode => path.hashCode;
 }
 
 class HostedSource implements DependencySource {
   final Uri url;
   final String name;
+  final VersionConstraint version;
   
-  HostedSource(this.name, [Uri url])
+  factory HostedSource.fromJson(String name, json, [String version]) {
+    if (null == version) {
+      if (json is! String)
+        throw new ArgumentError.value(json);
+      var _version = new VersionConstraint.parse(json);
+      return new HostedSource(name, _version);
+    }
+    if (json is! Map) throw new ArgumentError.value(json);
+    var url = Uri.parse(json["url"]);
+    var _name = Uri.parse(json["name"]);
+    return new HostedSource(name, new VersionConstraint.parse(version), url);
+  }
+  
+  HostedSource(this.name, this.version, [Uri url])
       : url = null == url ? defaultPubUrl : url;
   
   operator==(other) {
     if (other is! HostedSource) return false;
     return this.url == other.url && this.name == other.name;
+  }
+  
+  toJsonRepresentation() {
+    if (defaultPubUrl == url) return name;
   }
   
   int get hashCode => hash2(url, name);

@@ -13,11 +13,11 @@ definePackageTests() {
   group("Package", () {
     test("equals", () {
       var d1 = new Dependency("mydep",
-          new HostedSource("mydep"), new Version(0, 0, 1));
+          new HostedSource("mydep", new Version(0, 0, 1)));
       var d2 = new Dependency("mydep",
-          new PathSource("/my/path"), new Version(2, 0, 0));
+          new PathSource("/my/path"));
       var d3 = new Dependency("mydep",
-          new HostedSource("mydep"), new Version(0, 0, 1));
+          new HostedSource("mydep", new Version(0, 0, 1)));
       
       var p1 = new Package("mypack", new Version(0, 1, 0), "A package",
           new Set.from([d1, d2]), new Set.from([d1]));
@@ -58,23 +58,23 @@ definePackageTests() {
               new GitSource(Uri.parse("git://github.com/Adracus/rsa_pkcs.git"),
                             "0d79fea965767a0ab6d78cf75d9101ffe49e66d7"))));
       expect(dependencies[1],
-          equals(new Dependency("bignum", new HostedSource("bignum"),
+          equals(new Dependency("bignum", new HostedSource("bignum",
               new VersionRange(
                   min: new Version(0, 0, 6),
                   max: new Version(0, 1, 0),
-                  includeMin: true))));
+                  includeMin: true)))));
       expect(dependencies[2],
-          equals(new Dependency("bbs", new HostedSource("bbs"),
+          equals(new Dependency("bbs", new HostedSource("bbs",
               new VersionRange(
                   min: new Version(0, 0, 1),
                   max: new Version(0, 1, 0),
-                  includeMin: true))));
+                  includeMin: true)))));
       expect(dependencies[3],
-          equals(new Dependency("crypto", new HostedSource("crypto"),
+          equals(new Dependency("crypto", new HostedSource("crypto",
               new VersionRange(
                   min: new Version(0, 9, 0),
                   max: new Version(0, 10, 0),
-                  includeMin: true))));
+                  includeMin: true)))));
       expect(dependencies[4],
           equals(new Dependency("asn1lib",
               new GitSource(Uri.parse("git://github.com/Adracus/asn1lib.git"),
@@ -82,11 +82,11 @@ definePackageTests() {
       
       expect(package.devDependencies.length, equals(1));
       expect(package.devDependencies.single,
-          equals(new Dependency("unittest", new HostedSource("unittest"),
+          equals(new Dependency("unittest", new HostedSource("unittest",
               new VersionRange(
                   min: new Version(0, 11, 4),
                   max: new Version(0, 12, 0),
-                  includeMin: true))));
+                  includeMin: true)))));
     });
   });
 }

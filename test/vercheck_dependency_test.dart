@@ -11,11 +11,11 @@ defineDependencyTests() {
     group("DependencySource", () {
       group("HostedSource", () {
         test("==", () {
-          var h1 = new HostedSource("mypackage");
-          var h2 = new HostedSource("mypackage",
+          var h1 = new HostedSource("mypackage", null);
+          var h2 = new HostedSource("mypackage", null,
               Uri.parse("http://www.example.org"));
-          var h3 = new HostedSource("other");
-          var h4 = new HostedSource("mypackage");
+          var h3 = new HostedSource("other", null);
+          var h4 = new HostedSource("mypackage", null);
           
           expect(h1, equals(h1));
           expect(h1, isNot(equals(h2)));
@@ -57,11 +57,11 @@ defineDependencyTests() {
     group("Dependency", () {
       test("==", () {
         var d1 = new Dependency("mydep",
-            new HostedSource("mydep"), new Version(0, 0, 1));
+            new HostedSource("mydep", new Version(0, 0, 1)));
         var d2 = new Dependency("mydep",
-            new PathSource("/my/path"), new Version(2, 0, 0));
+            new PathSource("/my/path"));
         var d3 = new Dependency("mydep",
-            new HostedSource("mydep"), new Version(0, 0, 1));
+            new HostedSource("mydep", new Version(0, 0, 1)));
         
         expect(d1, equals(d1));
         expect(d1, isNot(equals(d2)));

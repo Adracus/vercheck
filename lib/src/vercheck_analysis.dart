@@ -75,11 +75,12 @@ class Comparison {
     if (dependency.source is! HostedSource)
       return toFuture(new Comparison._(nonHostedState, dependency));
     return getLatestPackage(dependency.name, getter: getter).then((package) {
-      if (dependency.version.isEmpty)
+      var version = (dependency.source as HostedSource).version;
+      if (version.isEmpty)
         return toFuture(new Comparison._(badState, dependency, package));
-      if (dependency.version.isAny)
+      if (version.isAny)
         return new Comparison._(anyState, dependency, package);
-      var state = compareVersions(dependency.version, package.version);
+      var state = compareVersions(version, package.version);
       return new Comparison._(state, dependency, package);
     });
   }
