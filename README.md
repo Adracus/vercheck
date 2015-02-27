@@ -1,3 +1,4 @@
 # vercheck
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-A minimal web server using [Shelf](https://pub.dartlang.org/packages/shelf).
+Dependency version checker for dart applications on pub.
