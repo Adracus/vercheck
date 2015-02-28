@@ -2,14 +2,11 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
-import 'dart:async' show Future;
-import 'dart:convert' show JSON;
+import 'dart:async' show Future, runZoned;
 
 import 'package:vercheck/vercheck.dart';
 import 'package:args/args.dart';
-import 'package:shelf/shelf.dart' as shelf;
-import 'package:shelf/shelf_io.dart' as io;
-import 'package:shelf_route/shelf_route.dart';
+import 'package:start/start.dart';
 
 final errorImage = new File("packages/vercheck/status-error-lightgrey.svg")
   .readAsStringSync();
@@ -35,66 +32,63 @@ void main(List<String> args) {
     exit(1);
   });
   
-  var myRouter = router()
-      ..get("/packages/{name}", _getPackage);
-
-  var handler = const shelf.Pipeline()
-      .addMiddleware(shelf.logRequests())
-      .addHandler(myRouter.handler);
-
-  io.serve(handler, 'localhost', port).then((server) {
-    print('Serving at http://${server.address.host}:${server.port}');
+  start(port: port).then((app) {
+    app.get("/packages/:name").listen(_getPackage);
+    
+    print("Server listening on $port");
   });
 }
 
-Future<Analysis> _analyze(shelf.Request request) {
-  var packageName = getPathParameter(request, "name");
+Future<Analysis> _analyze(Request request) {
+  var packageName = request.param("name");
   if (analyses.containsKey(packageName))
     return new Future.value(analyses[packageName]);
   return Analysis.analyzeLatest(packageName).then((analysis) {
     return analyses[packageName] = analysis;
+  }).catchError((e) {
+    print(e);
+    request.response
+      .status(500)
+      .send("Internal server error");
   });
 }
 
-Future<shelf.Response> _getPackage(shelf.Request request) {
-  var accept = request.headers["accept"];
+_getPackage(Request request) {
+  var accept = request.header("accept");
   return _analyze(request).then((analysis) {
-    if ("application/json" == accept)
+    if (request.accepts("application/json"))
       return _renderJson(analysis, request);
-    if (accept.startsWith("image"))
+    if (accept.any((part) => part.startsWith("image")))
       return _renderImage(analysis, request);
     return _renderHtml(analysis, request);
   });
 }
 
-shelf.Response _renderHtml(Analysis analysis, shelf.Request request) {
-  var name = getPathParameter(request, "name");
-  return new shelf.Response(200,
-      body: '<img src="http://localhost:8080/packages/$name">',
-      headers: {
-        "content-type": "text/html"
-      }
-  );
+_renderHtml(Analysis analysis, Request request) {
+  var name = request.param("name");
+  return request.response
+    ..status(200)
+    ..header("content-type", "text/html")
+    ..send('<img src="http://localhost:8080/packages/$name">');
 }
 
-shelf.Response _renderJson(Analysis analysis, shelf.Request request) {
-  var json = JSON.encode(analysis.toJsonRepresentation());
-  var response = new shelf.Response(200,
-      body: json,
-      headers: {
-        "content-type": "application/json"
-      }
-  );
-  return response;
+_renderJson(Analysis analysis, Request request) {
+  return request.response
+    ..status(200)
+    ..header("content-type", "application/json")
+    ..json(analysis.toJsonRepresentation());
 }
 
-shelf.Response _renderImage(Analysis analysis, shelf.Request request) {
+_renderImage(Analysis analysis, Request request) {
   var headers = {"content-type": "image/svg+xml"};
+  request.response
+    ..header("content-type", "image/svg+xml")
+    ..status(200);
   if (analysis.isGood)
-    return new shelf.Response(200, body: goodImage, headers: headers);
+    return request.response.send(goodImage);
   if (analysis.isWarning)
-    return new shelf.Response(200, body: warningImage, headers: headers);
+    return request.response.send(warningImage);
   if (analysis.isBad)
-    return new shelf.Response(200, body: badImage, headers: headers);
-  return new shelf.Response(200, body: errorImage, headers: headers);
+    return request.response.send(badImage);
+  return request.response.send(errorImage);
 }
