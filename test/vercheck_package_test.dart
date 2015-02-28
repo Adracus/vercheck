@@ -11,6 +11,9 @@ import 'package:vercheck/vercheck.dart';
 
 definePackageTests() {
   group("Package", () {
+    var body = new File("res/pub_response.json").readAsStringSync();
+    var rsaJson = JSON.decode(body)["latest"]["pubspec"];
+    
     test("==", () {
       var d1 = new Dependency("mydep",
           new HostedSource("mydep", new Version(0, 0, 1)));
@@ -41,11 +44,35 @@ definePackageTests() {
       expect(p1, isNot(equals(p5)));
     });
     
-    test("fromJson", () {
-      var body = new File("res/pub_response.json").readAsStringSync();
-      var json = JSON.decode(body)["latest"]["pubspec"];
+    test("toJsonRepresentation", () {
+      var package = new Package.fromJson(rsaJson);
       
-      var package = new Package.fromJson(json);
+      var representation = package.toJsonRepresentation();
+      expect(representation["name"], equals("rsa"));
+      expect(representation["version"], equals("0.0.2"));
+      expect(representation["dependencies"], equals({
+        "rsa_pkcs": {
+          "git": {
+            "url": "git://github.com/Adracus/rsa_pkcs.git",
+            "ref": "0d79fea965767a0ab6d78cf75d9101ffe49e66d7"
+          }
+        }, 
+        "bignum": ">=0.0.6 <0.1.0",
+        "bbs": ">=0.0.1 <0.1.0",
+        "crypto": ">=0.9.0 <0.10.0",
+        "asn1lib": {
+          "git": {
+            "url": "git://github.com/Adracus/asn1lib.git",
+            "ref": "795eeee72b180ff106c8f6f9d48b458b049fc11f"
+           }
+        }
+      }));
+      expect(representation["dev_dependencies"],
+          equals({"unittest": ">=0.11.4 <0.12.0"}));
+    });
+    
+    test("fromJson", () {
+      var package = new Package.fromJson(rsaJson);
       expect(package.name, equals("rsa"));
       expect(package.description,
           equals("A library providing a simple to use RSA interface"));

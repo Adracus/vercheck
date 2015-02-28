@@ -92,9 +92,9 @@ class GitSource implements DependencySource {
   }
   
   toJsonRepresentation() {
-    if (null == ref) return {"git": url};
+    if (null == ref) return {"git": url.toString()};
     return {"git": {
-      "url": url,
+      "url": url.toString(),
       "ref": ref
     }};
   }
@@ -150,7 +150,7 @@ class HostedSource implements DependencySource {
     var result = {
       "hosted": {
         "name": name,
-        "url": url
+        "url": url.toString()
       }
     };
     if (null == version) return result;

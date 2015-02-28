@@ -23,6 +23,41 @@ defineDependencyTests() {
           expect(h4, equals(h1));
           expect(h1.hashCode, equals(h4.hashCode));
         });
+        
+        test("fromJson", () {
+          expect(() => new HostedSource.fromJson("dep", {}), throws);
+          expect(() => new HostedSource.fromJson("dep", "0.0.1", "0.0.1"),
+              throws);
+          var h1 = new HostedSource.fromJson("dep", "0.0.1");
+          var h2 = new HostedSource.fromJson("dep",
+              {"name": "dep", "url": "http://example.org"}, "0.0.1");
+          
+          expect(h1, equals(new HostedSource("dep", new Version(0, 0, 1))));
+          expect(h2, equals(new HostedSource("dep", new Version(0, 0, 1),
+              Uri.parse("http://example.org"))));
+        });
+        
+        test("toJsonRepresentation", () {
+          var h1 = new HostedSource("dep", new Version(0, 0, 1));
+          var h2 = new HostedSource("dep", new Version(0, 0, 1),
+              Uri.parse("http://example.org"));
+          var h3 = new HostedSource("dep", null, Uri.parse("http://example.org"));
+          
+          expect(h1.toJsonRepresentation(), equals("0.0.1"));
+          expect(h2.toJsonRepresentation(), equals({
+            "hosted": {
+              "name": "dep",
+              "url": "http://example.org"
+            },
+            "version": "0.0.1"
+          }));
+          expect(h3.toJsonRepresentation(), equals({
+            "hosted": {
+              "name": "dep",
+              "url": "http://example.org"
+            }
+          }));
+        });
       });
       
       group("PathSource", () {
@@ -35,6 +70,14 @@ defineDependencyTests() {
           expect(p1, isNot(equals(p2)));
           expect(p1, equals(p3));
           expect(p1.hashCode, equals(p3.hashCode));
+        });
+        
+        test("toJsonRepresentation", () {
+          var p = new PathSource("/my/path");
+          
+          expect(p.toJsonRepresentation(), equals({
+            "path": "/my/path"
+          }));
         });
       });
       
@@ -50,6 +93,19 @@ defineDependencyTests() {
           expect(g1, isNot(equals(g3)));
           expect(g1, equals(g4));
           expect(g1.hashCode, equals(g4.hashCode));
+        });
+        
+        test("toJsonRepresentation", () {
+          var g1 = new GitSource(Uri.parse("http://example.org"));
+          var g2 = new GitSource(Uri.parse("http://example.org"), "myref");
+          
+          expect(g1.toJsonRepresentation(), equals({"git": "http://example.org"}));
+          expect(g2.toJsonRepresentation(), equals({
+            "git": {
+              "url": "http://example.org",
+              "ref": "myref"
+            }
+          }));
         });
       });
     });
@@ -67,6 +123,15 @@ defineDependencyTests() {
         expect(d1, isNot(equals(d2)));
         expect(d1, equals(d3));
         expect(d1.hashCode, equals(d3.hashCode));
+      });
+      
+      test("toJsonRepresentation", () {
+        var hostedSource = new HostedSource("mydep", new Version(0, 0, 2));
+        var d = new Dependency("mydep", hostedSource);
+        
+        expect(d.toJsonRepresentation(), equals({
+          "mydep": "0.0.2"
+        }));
       });
     });
   });
