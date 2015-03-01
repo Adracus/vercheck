@@ -31,12 +31,16 @@ void main(List<String> args) {
     exit(1);
   });
   
-  start(port: port).then((app) {
+  HttpServer.bind('0.0.0.0', port).then((server) {
+    server.listen((req) => req.response..write("test")..close());
+  });
+  
+  /*start(port: port).then((app) {
     app.get("/packages/:name").listen(_getPackage);
     app.get("/").listen((req) => req.response.send("Vercheck"));
     
     print("Server listening on $port");
-  });
+  });*/
 }
 
 Future<Analysis> _analyze(Request request) {
