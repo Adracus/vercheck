@@ -22,8 +22,7 @@ Map<String, Analysis> analyses = {};
 void main(List<String> args) {
   var parser = new ArgParser()
       ..addOption('port', abbr: 'p',
-          defaultsTo: const String.fromEnvironment("port",
-              defaultValue: "8080"));
+          defaultsTo: "8080");
 
   var result = parser.parse(args);
 
@@ -34,6 +33,7 @@ void main(List<String> args) {
   
   start(port: port).then((app) {
     app.get("/packages/:name").listen(_getPackage);
+    app.get("/").listen((req) => req.response.send("Vercheck"));
     
     print("Server listening on $port");
   });
