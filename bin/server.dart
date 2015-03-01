@@ -69,7 +69,7 @@ _renderHtml(Analysis analysis, Request request) {
   return request.response
     ..status(200)
     ..header("content-type", "text/html")
-    ..send('<img src="http://localhost:8080/packages/$name">');
+    ..send('<img src="/packages/$name">');
 }
 
 _renderJson(Analysis analysis, Request request) {
