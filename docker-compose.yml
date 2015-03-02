@@ -1,0 +1,12 @@
+web:
+  build: .
+  ports:
+    - "8080:8080"
+  links:
+    - redis
+  environment:
+    - REDIS=redis
+redis:
+  image: redis
+  ports:
+    - "6379"

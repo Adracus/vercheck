@@ -11,6 +11,11 @@ class Dependency {
   
   Dependency(this.name, this.source);
   
+  Dependency.fromJson(Map<String, dynamic> json)
+      : name = json.keys.single,
+        source = new DependencySource.fromJson(json.keys.single,
+                                               json.values.single);
+  
   static Set<Dependency> dependenciesFromJson(Map<String, dynamic> dependencies) {
     var result = new Set();
     dependencies.forEach((name, json) {

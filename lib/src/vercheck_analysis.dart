@@ -33,10 +33,23 @@ class Analysis {
   Analysis._(int state, this.package, this.comparisons)
       : state = checkState(state);
   
+  Analysis.fromJson(Map<String, dynamic> json)
+      : state = json["state"],
+        package = new Package.fromJson(json["package"]),
+        comparisons = comparisonsFromJson(json["comparisons"]);
+  
   bool get isGood => goodState == state;
   bool get isWarning => warningState == state;
   bool get isBad => badState == state;
   bool get isError => errorState == state;
+  
+  static Set<Comparison> comparisonsFromJson(Map<String, dynamic> json) {
+    var result = new Set();
+    json.forEach((_, comparisonJson) {
+      result.add(new Comparison.fromJson(comparisonJson));
+    });
+    return result;
+  }
   
   static int checkState(int state) {
     if (!states.any((s) => s == state))
@@ -72,11 +85,7 @@ class Analysis {
     return _hashCode;
   }
   
-  static Future<Analysis> analyzeLatest(String packageName) {
-    return getLatestPackage(packageName).then(analyzePackage);
-  }
-  
-  static Future<Analysis> analyzePackage(Package package) {
+  static Future<Analysis> analyze(Package package) {
     return Future.wait(package.dependencies.map(Comparison.analyze))
                  .then((List<Comparison> comparisons) {
       int state = comparisons.fold(0, (acc, comparison) {
@@ -112,19 +121,28 @@ class Comparison {
   
   Comparison._(this.state, this.dependency, [this.package]);
   
+  Comparison.fromJson(Map<String, dynamic> data)
+      : dependency = new Dependency.fromJson(data["dependency"]),
+        state = data["state"],
+        package = null == data["package"] ?
+            null : new Package.fromJson(data["package"]);
+  
   String get stateName => stateNames[state];
   
-  toJsonRepresentation() => {
-    "dependency": dependency.toJsonRepresentation(),
-    "package": package.toJsonRepresentation(),
-    "state": state,
-    "state_name": stateName
-  };
+  toJsonRepresentation() {
+    var result = {
+      "dependency": dependency.toJsonRepresentation(),
+      "state": state,
+      "state_name": stateName
+    };
+    if (null != package) result["package"] = package.toJsonRepresentation();
+    return result;
+  }
   
   static Future<Comparison> analyze(Dependency dependency, {Get getter}) {
     if (dependency.source is! HostedSource)
       return toFuture(new Comparison._(nonHostedState, dependency));
-    return getLatestPackage(dependency.name, getter: getter).then((package) {
+    return getPubPackage(dependency.name, getter: getter).then((package) {
       var version = (dependency.source as HostedSource).version;
       if (version.isEmpty)
         return toFuture(new Comparison._(badState, dependency, package));

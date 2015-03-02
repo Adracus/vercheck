@@ -8,5 +8,8 @@ dependencies:
   args: '>=0.10.0 <0.13.0'
   pub_semver: ">=1.1.0 <2.0.0"
   start: ">=0.2.7 <0.3.0"
+  postgresql: ">=0.3.0+2 <0.4.0"
+  yaml: ">=2.1.2 <3.0.0"
+  redis_client: ">=0.1.15 <0.2.0"
 dev_dependencies:
   unittest: any

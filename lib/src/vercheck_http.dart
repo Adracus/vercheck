@@ -4,18 +4,36 @@ import 'dart:async' show Future;
 import 'dart:convert' show JSON;
 
 import 'package:http/http.dart' as http;
+import 'package:yaml/yaml.dart' show loadYaml;
 
 import 'vercheck_package.dart';
+import 'vercheck_hash.dart';
 
 typedef Future<http.Response> Get(uri, {Map<String, String> headers});
 
 final Uri defaultPubUrl =
-  createPubUri("pub.dartlang.org", prefix: "api", secure: true);
+  createApiUrl("pub.dartlang.org", prefix: "api", secure: true);
+final Uri defaultGithubUrl =
+  createApiUrl("api.github.com", secure: true);
 
 const Map<String, String> defaultHeaders =
   const {"accept": "application/json"};
+  
+class RepoSlug {
+  final String owner;
+  final String repo;
+  
+  RepoSlug(this.owner, this.repo);
+  
+  operator==(other) {
+    if (other is! RepoSlug) return false;
+    return other.owner == this.owner && other.repo == this.repo;
+  }
+  
+  int get hashCode => hash2(owner, repo);
+}
 
-Uri createPubUri(String host, {String prefix, bool secure: true}) {
+Uri createApiUrl(String host, {String prefix, bool secure: true}) {
   String scheme = secure ? "https" : "http";
   return new Uri(scheme: scheme,
                  path: prefix,
@@ -28,7 +46,7 @@ Uri join(String path, Uri source) {
   return source.replace(pathSegments: pathSegments..add(path));
 }
 
-Future<Map<String, dynamic>> getPackageJson(String packageName,
+Future<Map<String, dynamic>> getPubJson(String packageName,
     {Uri pubUrl, Map<String, String> headers: defaultHeaders,
      Get getter}) {
   if (null == pubUrl) pubUrl = defaultPubUrl;
@@ -41,14 +59,61 @@ Future<Map<String, dynamic>> getPackageJson(String packageName,
   });
 }
 
-Future<Package> getLatestPackage(String packageName,
+Future<Package> getPackage(identifier,
+    {Uri idUrl, Map<String, dynamic> headers: defaultHeaders, Get getter}) {
+  if (identifier is! String && identifier is! RepoSlug)
+    throw new ArgumentError.value(identifier);
+  if (identifier is String)
+    return getPubPackage(identifier,
+        pubUrl: idUrl,
+        headers: headers,
+        getter: getter);
+  return getGithubPackage(identifier, 
+      githubUrl: idUrl,
+      headers: headers,
+      getter: getter);
+}
+
+Future<Package> getPubPackage(String packageName,
     {Uri pubUrl, Map<String, dynamic> headers: defaultHeaders,
      Get getter}) {
-  return getPackageJson(packageName,
+  return getPubJson(packageName,
                         pubUrl: pubUrl,
                         headers: headers,
                         getter: getter).then((json) {
     return new Package.fromJson(json["latest"]["pubspec"]);
+  });
+}
+
+Future<String> getGitJson(RepoSlug slug, String path,
+    {Uri githubUrl, Map<String, dynamic> headers: defaultHeaders,
+      Get getter}) {
+  if (null == githubUrl) githubUrl = defaultGithubUrl;
+  if (null == getter) getter = http.get;
+  
+  var targetUri = join(path,
+                  join("contents",
+                  join(slug.repo,
+                  join(slug.owner,
+                  join("repos",
+                    githubUrl)))));
+  
+  return getter(targetUri, headers: headers).then((response) {
+    var data = JSON.decode(response.body);
+    var downloadUrl = data["download_url"];
+    return getter(downloadUrl).then((response) => response.body);
+  });
+}
+
+Future<Package> getGithubPackage(RepoSlug slug,
+    {Uri githubUrl, Map<String, dynamic> headers: defaultHeaders,
+      Get getter}) {
+  return getGitJson(slug, "pubspec.yaml",
+      getter: getter,
+      headers: headers,
+      githubUrl: githubUrl).then((content) {
+    var data = loadYaml(content);
+    return new Package.fromJson(data);
   });
 }
 

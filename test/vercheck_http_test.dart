@@ -13,9 +13,9 @@ import 'package:vercheck/vercheck.dart';
 defineHttpTests() {
   group("http", () {
     test("createPubUri", () {
-      var url1 = createPubUri("pub.dartlang.org", prefix: "api");
-      var url2 = createPubUri("my.pub.org", secure: false);
-      var url3 = createPubUri("my.own.pub", prefix: "api/pub/v1", secure: false);
+      var url1 = createApiUrl("pub.dartlang.org", prefix: "api");
+      var url2 = createApiUrl("my.pub.org", secure: false);
+      var url3 = createApiUrl("my.own.pub", prefix: "api/pub/v1", secure: false);
       
       expect(url1.toString(), equals("https://pub.dartlang.org/api"));
       expect(url2.toString(), equals("http://my.pub.org"));
@@ -41,7 +41,7 @@ defineHttpTests() {
         
         return new Future.value(new Response(body, 200));
       };
-      getPackageJson("rsa", getter: getter).then(expectAsync((json) {
+      getPubJson("rsa", getter: getter).then(expectAsync((json) {
         expect(json, equals(JSON.decode(body)));
       }));
     });
@@ -54,7 +54,7 @@ defineHttpTests() {
         
         return new Future.value(new Response(body, 200));
       };
-      getLatestPackage("rsa", getter: getter).then(expectAsync((Package package) {
+      getPubPackage("rsa", getter: getter).then(expectAsync((Package package) {
         var compare = new Package.fromJson(JSON.decode(body)["latest"]["pubspec"]);
         
         expect(package == compare, isTrue);
