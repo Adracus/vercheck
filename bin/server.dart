@@ -31,7 +31,7 @@ void main(List<String> args) {
     exit(1);
   });
   
-  start(port: port).then((app) {
+  start(host: '0.0.0.0', port: port).then((app) {
     app.get("/packages/:name").listen(_getPackage);
     app.get("/").listen((req) => req.response.send("Vercheck"));
     
