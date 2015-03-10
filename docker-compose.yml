@@ -4,9 +4,15 @@ web:
     - "8080:8080"
   links:
     - redis
+    - postgres
   environment:
-    - REDIS=redis
+    - REDIS_URL=redis
+    - POSTGRES_URL=postgres://postgres:@postgres:5432/postgres
 redis:
   image: redis
   ports:
     - "6379"
+postgres:
+  image: postgres
+  ports:
+    - "5432:5432"

@@ -5,6 +5,26 @@
   "env": {
     "BUILDPACK_URL": "https://github.com/igrigorik/heroku-buildpack-dart.git",
     "DART_SDK_URL": "https://storage.googleapis.com/dart-archive/channels/stable/release/42828/sdk/dartsdk-linux-ia32-release.zip",
-    "DART_BUILD_CMD": ""
+    "DART_BUILD_CMD": ":",
+    "VERCHECK_IDENTIFIER": {
+      "description": "Identifier towards the github api",
+      "value": ""
+    },
+    "VERCHECK_SECRET": {
+      "description": "Shared secret with the github api",
+      "value": ""
+    },
+    "VERCHECK_URL": {
+      "description": "The url of your vercheck instance",
+      "value": ""
+    },
+    "GITHUB_TOKEN_URL": {
+      "description": "Url to ask for github tokens",
+      "value": "https://github.com/login/oauth/access_token"
+    },
+    "GITHUB_AUTH_URL": {
+      "description": "Url for github oauth requests",
+      "value": "https://github.com/login/oauth/authorize"
+    }
   }
 }

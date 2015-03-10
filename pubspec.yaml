@@ -11,5 +11,8 @@ dependencies:
   postgresql: ">=0.3.0+2 <0.4.0"
   yaml: ">=2.1.2 <3.0.0"
   redis_client: ">=0.1.15 <0.2.0"
+  oauth2: ">=0.9.3 <0.10.0"
+  dbmapper:
+    git: git://github.com/Adracus/dbmapper.git
 dev_dependencies:
   unittest: any

@@ -3,12 +3,15 @@
 
 import 'dart:io';
 import 'dart:async' show Future, runZoned;
+import 'dart:convert' show JSON;
 
 import 'package:vercheck/vercheck.dart';
 import 'package:args/args.dart';
 import 'package:start/start.dart';
 
 import 'cache.dart';
+import 'auth.dart' as auth;
+import 'env.dart' as env;
 
 Cache cache;
 
@@ -22,6 +25,16 @@ final goodImage = new File("packages/vercheck/status-up--to--date-brightgreen.sv
   .readAsStringSync();
 
 
+Future<String> body(Request request) {
+  return request.input.toList().then((lines) {
+    return lines.fold("", (acc, l1) => acc + new String.fromCharCodes(l1));
+  });
+}
+
+Future<Map<String, dynamic>> jsonBody(Request request) {
+  return body(request).then(JSON.decode);
+}
+
 
 void main(List<String> args) {
   var parser = new ArgParser()
@@ -34,6 +47,8 @@ void main(List<String> args) {
     stdout.writeln('Could not parse port value "$val" into a number.');
     exit(1);
   });
+  
+  env.checkEnv();
   
   var redis = Platform.environment["REDIS_URL"];
   cache = null == redis ? new Cache() : new RedisCache(redis);
@@ -51,6 +66,20 @@ void main(List<String> args) {
       var slug = new RepoSlug(request.param("owner"), request.param("repo"));
       return _analyzePackage(request, slug).
           catchError((e) => _packageAnalysisError(request, e));
+    });
+    
+    app.get("/auth").listen((request) {
+      return request.response
+        .status(302)
+        .header("location", auth.authUrl.toString())
+        .send("");
+    });
+    
+    app.get("/oauthcallback").listen((request) {
+      auth.client.handleAuthorizationResponse(request.params).then((client) {
+        print(client.credentials);
+        return request.response.send("okay");
+      });
     });
     
     app.get("/").listen((req) => req.response.send("Vercheck"));
