@@ -8,6 +8,7 @@ import 'dart:convert' show JSON;
 import 'package:vercheck/vercheck.dart';
 import 'package:args/args.dart';
 import 'package:start/start.dart';
+import 'package:oauth2/oauth2.dart';
 
 import 'cache.dart';
 import 'auth.dart' as auth;
@@ -48,7 +49,7 @@ void main(List<String> args) {
     exit(1);
   });
   
-  env.checkEnv();
+  //env.checkEnv();
   
   var redis = Platform.environment["REDIS_URL"];
   cache = null == redis ? new Cache() : new RedisCache(redis);
@@ -76,7 +77,7 @@ void main(List<String> args) {
     });
     
     app.get("/oauthcallback").listen((request) {
-      auth.client.handleAuthorizationResponse(request.params).then((client) {
+      auth.handleAuthorization(request.params).then((client) {
         print(client.credentials);
         return request.response.send("okay");
       });
