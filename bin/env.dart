@@ -8,6 +8,8 @@ final secret = env["VERCHECK_SECRET"];
 
 final identifier = env["VERCHECK_IDENTIFIER"];
 
+final postgresUrl = env["POSTGRES_URL"];
+
 final githubAuthUrl = fallback(env["GITHUB_AUTH_URL"],
   "https://github.com/login/oauth");
 

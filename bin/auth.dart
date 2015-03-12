@@ -7,6 +7,7 @@ import 'package:vercheck/vercheck.dart' show join;
 import 'package:start/start.dart';
 
 import 'env.dart' as env;
+import 'middleware.dart';
 
 Map appendToMap(Map source, Map append) {
   if (null == append) return source;
@@ -38,7 +39,17 @@ Future<GitHub> handleCode(String code) {
   });
 }
 
+GitHub systemClient() {
+  return new GitHub(auth: new Authentication.anonymous());
+}
+
 GitHub getClient(Request request) {
-  var token = request.header("verheck_token").single;
+  var token = request.cookies.firstWhere((cookie) =>
+      vercheckToken == cookie.name).value;
   return new GitHub(auth: new Authentication.withToken(token));
+}
+
+bool isAuthorized(Request request) {
+  var cookies = request.cookies;
+  return cookies.any((cookie) => vercheckToken == cookie.name);
 }

@@ -11,7 +11,7 @@ import 'package:vercheck/vercheck.dart';
 
 definePackageTests() {
   group("Package", () {
-    var body = new File("res/pub_response.json").readAsStringSync();
+    var body = new File("test/res/pub_response.json").readAsStringSync();
     var rsaJson = JSON.decode(body)["latest"]["pubspec"];
     
     test("==", () {

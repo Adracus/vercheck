@@ -29,7 +29,7 @@ defineAnalysisTests() {
           _compare(new GitSource(Uri.parse("http://www.example.org")));
         });
         
-        var rsaResponse = new File("res/pub_response.json")
+        var rsaResponse = new File("test/res/pub_response.json")
                                       .readAsStringSync();
         
         var rsaGetter = (url, {Map<String, String> headers}) {
@@ -37,7 +37,7 @@ defineAnalysisTests() {
         };
         
         test("any constraint", () {
-          var rsaResponse = new File("res/pub_response.json")
+          var rsaResponse = new File("test/res/pub_response.json")
                                         .readAsStringSync();
           
           var dep = new Dependency("rsa",

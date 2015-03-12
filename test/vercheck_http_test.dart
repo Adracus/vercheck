@@ -32,7 +32,7 @@ defineHttpTests() {
           equals("http://pub.dartlang.org/api/mypackage"));
     });
     
-    var body = new File("res/pub_response.json").readAsStringSync();
+    var body = new File("test/res/pub_response.json").readAsStringSync();
     test("getPackageJson", () {
       var getter = (url, {Map<String, String> headers}) {
         expect(url, new isInstanceOf<Uri>("Uri"));

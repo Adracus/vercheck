@@ -45,8 +45,3 @@ void authorize(Request request, {bool redirectToCurrent: false, callback}) {
   }
   redirect(request, "/auth");
 }
-
-bool isAuthorized(Request request) {
-  var cookies = request.cookies;
-  return cookies.any((cookie) => vercheckToken == cookie.name);
-}

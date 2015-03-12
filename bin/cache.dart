@@ -1,10 +1,18 @@
 library cache;
 
+import 'dart:io' show Platform;
 import 'dart:async' show Future;
 import 'dart:convert' show JSON;
 
 import 'package:vercheck/vercheck.dart';
 import 'package:redis_client/redis_client.dart';
+
+Cache cache;
+
+void initializeCache() {
+  var redis = Platform.environment["REDIS_URL"];
+  cache = null == redis ? new Cache() : new RedisCache(redis);
+}
 
 abstract class Cache {
   Future<Analysis> put(String identifier, Analysis value);
