@@ -8,17 +8,12 @@ import 'package:start/start.dart';
 
 import 'env.dart' as env;
 
-bool _githubWasInitialized = false;
-
 Map appendToMap(Map source, Map append) {
   if (null == append) return source;
   return source..addAll(append);
 }
 
 OAuth2Flow _createClient() {
-  if (!_githubWasInitialized) {
-    initGitHub();
-  }
   return new OAuth2Flow(env.identifier,
                         env.secret,
                         baseUrl: env.githubAuthUrl,

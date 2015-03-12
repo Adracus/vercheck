@@ -6,6 +6,7 @@ import 'dart:async' show Future, runZoned;
 
 import 'package:vercheck/vercheck.dart';
 import 'package:args/args.dart';
+import 'package:github/server.dart';
 import 'package:start/start.dart';
 
 import 'cache.dart';
@@ -17,6 +18,7 @@ import 'middleware.dart';
 Cache cache;
 
 void main(List<String> args) {
+  initGitHub();
   
   var parser = new ArgParser()
       ..addOption('port', abbr: 'p',
@@ -25,7 +27,7 @@ void main(List<String> args) {
   var result = parser.parse(args);
 
   var port = int.parse(result['port'], onError: (val) {
-    stdout.writeln('Could not parse port value "$val" into a number.');
+    print('Could not parse port value "$val" into a number.');
     exit(1);
   });
   
