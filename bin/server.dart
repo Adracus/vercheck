@@ -3,41 +3,21 @@
 
 import 'dart:io';
 import 'dart:async' show Future, runZoned;
-import 'dart:convert' show JSON;
 
 import 'package:vercheck/vercheck.dart';
 import 'package:args/args.dart';
 import 'package:start/start.dart';
-import 'package:oauth2/oauth2.dart';
 
 import 'cache.dart';
 import 'auth.dart' as auth;
 import 'env.dart' as env;
+import 'images.dart';
+import 'middleware.dart';
 
 Cache cache;
 
-final errorImage = new File("packages/vercheck/status-error-lightgrey.svg")
-  .readAsStringSync();
-final badImage = new File("packages/vercheck/status-out--of--date-orange.svg")
-  .readAsStringSync();
-final warningImage = new File("packages/vercheck/status-warning-yellow.svg")
-  .readAsStringSync();
-final goodImage = new File("packages/vercheck/status-up--to--date-brightgreen.svg")
-  .readAsStringSync();
-
-
-Future<String> body(Request request) {
-  return request.input.toList().then((lines) {
-    return lines.fold("", (acc, l1) => acc + new String.fromCharCodes(l1));
-  });
-}
-
-Future<Map<String, dynamic>> jsonBody(Request request) {
-  return body(request).then(JSON.decode);
-}
-
-
 void main(List<String> args) {
+  
   var parser = new ArgParser()
       ..addOption('port', abbr: 'p',
           defaultsTo: "8080");
@@ -49,7 +29,7 @@ void main(List<String> args) {
     exit(1);
   });
   
-  //env.checkEnv();
+  env.checkEnv();
   
   var redis = Platform.environment["REDIS_URL"];
   cache = null == redis ? new Cache() : new RedisCache(redis);
@@ -57,29 +37,48 @@ void main(List<String> args) {
   if (redis != null) print("Using redis $redis");
   
   start(host: '0.0.0.0', port: port).then((app) {
-    app.get("/packages/:name").listen((request) {
-      var name = request.param("name");
-      return _analyzePackage(request, name);//.
-          //catchError((e) => _packageAnalysisError(request, e));
-    });
-    
     app.get("/github/:owner/:repo").listen((request) {
       var slug = new RepoSlug(request.param("owner"), request.param("repo"));
       return _analyzePackage(request, slug).
           catchError((e) => _packageAnalysisError(request, e));
     });
     
+    app.post("/github").listen((request) {
+      if (!isAuthorized(request))
+        return authorize(request, redirectToCurrent: true);
+      jsonBody(request).then((json) {
+        var client = auth.getClient(request);
+        client.users.getCurrentUser().then((user) {
+          if (user.login != json["user"])
+            return request.response.status(401).send("Unauthorized");
+          if (null == json["repo"])
+            return request.response.status(400).send("Repo field missing");
+          
+        });
+      });
+    });
+    
     app.get("/auth").listen((request) {
-      return request.response
-        .status(302)
-        .header("location", auth.authUrl.toString())
-        .send("");
+      return redirect(request, auth.authUrl);
     });
     
     app.get("/oauthcallback").listen((request) {
-      auth.handleAuthorization(request.params).then((client) {
-        print(client.credentials);
-        return request.response.send("okay");
+      var code = request.param("code");
+      auth.handleCode(code).then((client) {
+        request.response.cookie(vercheckToken, client.auth.token);
+        
+        var cookie = redirectCookie(request);
+        if (null != cookie) {
+          var target = Uri.decodeFull(cookie.value);
+          //request.response.deleteCookie(vercheckRedirect);
+          return redirect(request, target);
+        }
+        
+        return client.users.getCurrentUser().then((user) {
+          return request.response
+              ..header("content-type", "text/html")
+              ..send(user.name);
+        });
       });
     });
     
@@ -98,12 +97,14 @@ _packageAnalysisError(Request request, e) {
   return request.response.status(500).send("Internal server error");
 }
 
-Future _analyzePackage(Request request, identifier) {
-  return cache.get(identifier).then((analysis) {
-    if (null != analysis) return _renderAnalysis(request, analysis);
-    return getPackage(identifier).then(Analysis.analyze).then((analysis) {
-      return cache.put(identifier, analysis).then((_) {
-        return _renderAnalysis(request, analysis);
+Future _analyzePackage(Request request, String identifier) {
+  return cache.containsKey(identifier).then((contained) {
+    return cache.get(identifier).then((analysis) {
+      if (null != analysis) return _renderAnalysis(request, analysis);
+      return getPackage(identifier).then(Analysis.analyze).then((analysis) {
+        return cache.put(identifier, analysis).then((_) {
+          return _renderAnalysis(request, analysis);
+        });
       });
     });
   });

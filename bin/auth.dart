@@ -2,32 +2,48 @@ library vercheck.auth;
 
 import 'dart:async' show Future;
 
-import 'package:oauth2/oauth2.dart' as oauth2;
+import 'package:github/server.dart';
 import 'package:vercheck/vercheck.dart' show join;
+import 'package:start/start.dart';
 
-import 'env.dart';
+import 'env.dart' as env;
 
+bool _githubWasInitialized = false;
 
-
-
-oauth2.AuthorizationCodeGrant _createClient() {
-  return new oauth2.AuthorizationCodeGrant(identifier, secret,
-        githubAuthUrl, githubTokenUrl);
+Map appendToMap(Map source, Map append) {
+  if (null == append) return source;
+  return source..addAll(append);
 }
 
-Uri _authUrl;
+OAuth2Flow _createClient() {
+  if (!_githubWasInitialized) {
+    initGitHub();
+  }
+  return new OAuth2Flow(env.identifier,
+                        env.secret,
+                        baseUrl: env.githubAuthUrl,
+                        redirectUri: _redirectUrl.toString());
+}
 
-Uri get authUrl {
+String _authUrl;
+
+String get authUrl {
   if (null == _authUrl) {
-    _authUrl = _createClient().getAuthorizationUrl(_redirectUrl);
+    _authUrl = _createClient().createAuthorizeUrl();
   }
   return _authUrl;
 }
 
-Uri get _redirectUrl => join("oauthcallback", instanceUrl);
+Uri get _redirectUrl => join("oauthcallback", env.instanceUrl);
 
-Future<oauth2.Client> handleAuthorization(Map<String, String> parameters) {
+Future<GitHub> handleCode(String code) {
   var client = _createClient();
-  client.getAuthorizationUrl(_redirectUrl);
-  return client.handleAuthorizationResponse(parameters);
+  return client.exchange(code).then((response) {
+    return new GitHub(auth: new Authentication.withToken(response.token));
+  });
+}
+
+GitHub getClient(Request request) {
+  var token = request.header("verheck_token").single;
+  return new GitHub(auth: new Authentication.withToken(token));
 }
